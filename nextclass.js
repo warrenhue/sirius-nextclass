@@ -1,4 +1,4 @@
-/* NextClass: macOS JavaScript for Automation (JXA). No dependencies. */
+
 'use strict';
 var API = 'https://sirinium.avh-vless.work';
 function quote(s) { return "'" + String(s).replace(/'/g, "'\\''") + "'"; }
@@ -52,7 +52,7 @@ function run(argv) {
             try {
                 var saved = JSON.parse(ObjC.unwrap($.NSString.stringWithContentsOfFileEncodingError(config, $.NSUTF8StringEncoding, null)));
                 if (typeof saved.group === 'string' && saved.group.trim()) group = saved.group;
-            } catch (e) { /* A damaged configuration is replaced after choosing again. */ }
+            } catch (e) { }
         }
         if (!group || argv.indexOf('--choose-group') !== -1) {
             var groups = get('/api/groups').filter(function(g) { return typeof g === 'string' && g.trim(); }).sort();
@@ -64,7 +64,7 @@ function run(argv) {
             var ok = $(JSON.stringify({group:group},null,2)).writeToFileAtomicallyEncodingError(config, true, $.NSUTF8StringEncoding, null);
             if (!ok) throw new Error('Не удалось сохранить выбранную группу.');
         }
-        // No upper date bound: find the next lesson among all published dates.
+       
         var now = new Date(), rows = [], offset = 0, page;
         do {
             page = get('/api/schedule?section_type=group&group=' + encodeURIComponent(group) + '&date_from=' + encodeURIComponent(moscowDate(now)) + '&limit=2000&offset=' + offset);
@@ -76,7 +76,7 @@ function run(argv) {
         if (exact.some(function(r) {return !isFinite(start(r));})) {
             throw new Error('В расписании есть занятия без корректной даты или времени. Следующую пару нельзя определить надёжно. Проверь расписание на сайте.');
         }
-        // Re-check clock after network requests so a lesson that just started is excluded.
+       
         var next = nextLessons(rows, group, new Date());
         if (!next.length) {
             notify('Будущих занятий нет в опубликованном расписании.', group);
@@ -88,7 +88,7 @@ function run(argv) {
                 (r.teacher ? '\n' + r.teacher : '');
         });
         var subtitle = group + ' · ' + next[0].date + ' · ' + next[0].start_time + (next[0].end_time ? '–' + next[0].end_time : '') + ' МСК';
-        // Parallel subgroup lessons are all displayed rather than silently picking one.
+       
         messages.forEach(function(message) { notify(message, subtitle); });
         return subtitle + '\n' + messages.join('\n\n');
     } catch (e) {
